@@ -1,81 +1,110 @@
 package com.github.tictactoe.controller;
 
+import com.github.tictactoe.model.Game;
+import com.github.tictactoe.view.ConfirmationAlert;
 import com.github.tictactoe.view.GameBox;
-import javafx.animation.KeyFrame;
-import javafx.animation.KeyValue;
-import javafx.animation.Timeline;
-import javafx.scene.Parent;
-import javafx.scene.layout.Pane;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Line;
-import javafx.util.Duration;
+import com.github.tictactoe.view.Tile;
+import javafx.application.Platform;
+import javafx.scene.text.Font;
+import javafx.scene.text.Text;
 
 /**
  * Created by maxtar.
  */
-@SuppressWarnings("unused")
+@SuppressWarnings("UnnecessaryLocalVariable")
 public class Controller {
 
-    private Pane pane = new Pane();
-    private Timeline timeline = new Timeline();
+    private final GameBox gameBox;
 
-    private double lineWidth = 5;
-    private Color lineColor = Color.RED;
-
-    public void drawLine(int startX, int startY, int endX, int endY) {
-        Line line = new Line();
-
-        line.setStartX(startX + lineWidth / 2);
-        line.setStartY(startY + lineWidth / 2);
-        line.setEndX(startX);
-        line.setEndY(startY);
-
-        line.setStrokeWidth(lineWidth);
-        line.setStroke(lineColor);
-
-        pane.getChildren().add(line);
-
-        timeline.getKeyFrames().add(new KeyFrame(Duration.millis(100),
-                new KeyValue(line.endXProperty(), endX),
-                new KeyValue(line.endYProperty(), endY)));
-        timeline.play();
+    public Controller(GameBox gameBox) {
+        this.gameBox = gameBox;
     }
 
-    public Parent createContent() {
-        pane.getChildren().add(new GameBox(this));
-        return pane;
+    public void onTileClicked(Tile tile) {
+        Game game = gameBox.getGame();
+        int tileSpacing = GameBox.getTileSpacing();
+        int size = GameBox.getSize();
+        if (game.getState() == Game.State.CONTINUES && tile.getState() == Tile.State.EMPTY) {
+            Text text = new Text();
+            if (game.isCross()) {
+                text.setText("+");
+                text.setFont(Font.font(Tile.getCrossFontSize()));
+                text.setRotate(45.);
+                game.setIsCross(false);
+                tile.setState(Tile.State.CROSS);
+            } else {
+//                text.setText("\u25CB");
+                text.setText("O");
+                text.setFont(Font.font(Tile.getNoughtFontSize()));
+                game.setIsCross(true);
+                tile.setState(Tile.State.NOUGHT);
+            }
+            tile.getChildren().add(text);
+        }
+        game.checkResult();
+        if (game.getState() != Game.State.CONTINUES) {
+            int result = game.checkResult();
+            int tileSize = Tile.getSize();
+            switch (game.getLineType()) {
+                case ROW: {
+                    int startX = tileSpacing;
+                    int startY = tileSize / 2 + (result - 1) * tileSize + result * tileSpacing;
+                    int endX = size * (tileSize + tileSpacing);
+                    int endY = startY;
+                    gameBox.drawLine(startX, startY, endX, endY);
+                    break;
+                }
+                case COLUMN: {
+                    int startX = tileSize / 2 + (result - 1) * tileSize + result * tileSpacing;
+                    int startY = tileSpacing;
+                    int endX = startX;
+                    int endY = size * (tileSize + tileSpacing);
+                    gameBox.drawLine(startX, startY, endX, endY);
+                    break;
+                }
+                case DIAGONAL: {
+                    switch (result) {
+                        case 1: {
+                            int startX = tileSpacing;
+                            int startY = tileSpacing;
+                            int endX = size * (tileSize + tileSpacing);
+                            int endY = size * (tileSize + tileSpacing);
+                            gameBox.drawLine(startX, startY, endX, endY);
+                            break;
+                        }
+                        case 2: {
+                            int startX = size * (tileSize + tileSpacing);
+                            int startY = tileSpacing;
+                            int endX = tileSpacing;
+                            int endY = size * (tileSize + tileSpacing);
+                            gameBox.drawLine(startX, startY, endX, endY);
+                            break;
+                        }
+                    }
+                    break;
+                }
+                case DRAW: {
+                    break;
+                }
+            }
+            switch (game.getState()) {
+                case DRAW: {
+                    new ConfirmationAlert("Ничья!", gameBox.getScene().getWindow());
+                    break;
+                }
+                case CROSS: {
+                    gameBox.getTimeline().setOnFinished(actionEvent -> Platform.runLater(() ->
+                            new ConfirmationAlert("Крестики победили!", gameBox.getScene().getWindow())));
+                    break;
+                }
+                case NOUGHT: {
+                    gameBox.getTimeline().setOnFinished(actionEvent -> Platform.runLater(() ->
+                            new ConfirmationAlert("Нолики победили!", gameBox.getScene().getWindow())));
+                    break;
+                }
+            }
+        }
     }
 
-    public Pane getPane() {
-        return pane;
-    }
-
-    public void setPane(Pane pane) {
-        this.pane = pane;
-    }
-
-    public Timeline getTimeline() {
-        return timeline;
-    }
-
-    public void setTimeline(Timeline timeline) {
-        this.timeline = timeline;
-    }
-
-    public double getLineWidth() {
-        return lineWidth;
-    }
-
-    public void setLineWidth(int lineWidth) {
-        this.lineWidth = lineWidth;
-    }
-
-    public Color getLineColor() {
-        return lineColor;
-    }
-
-    public void setLineColor(Color lineColor) {
-        this.lineColor = lineColor;
-    }
 
 }

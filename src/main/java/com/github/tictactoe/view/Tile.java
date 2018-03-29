@@ -1,17 +1,14 @@
 package com.github.tictactoe.view;
 
-import com.github.tictactoe.model.Game;
 import javafx.geometry.Pos;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
-import javafx.scene.text.Font;
-import javafx.scene.text.Text;
 
 /**
  * Created by maxtar.
  */
-@SuppressWarnings("unused")
+@SuppressWarnings({"unused", "WeakerAccess"})
 public class Tile extends StackPane {
 
     public enum State {EMPTY, NOUGHT, CROSS}
@@ -21,36 +18,19 @@ public class Tile extends StackPane {
     private static int noughtFontSize = 60;
     private State state = State.EMPTY;
 
-    Tile(Game game) {
+    Tile() {
         Rectangle rectangle = new Rectangle(size, size, Color.TRANSPARENT);
         rectangle.setStroke(Color.BLACK);
         getChildren().add(rectangle);
         setAlignment(Pos.CENTER);
-
-        setOnMouseClicked(event -> {
-            if (game.getState() == Game.State.CONTINUES && state == State.EMPTY) {
-                Text text = new Text();
-                if (game.isCross()) {
-                    text.setText("+");
-                    text.setFont(Font.font(crossFontSize));
-                    text.setRotate(45.);
-                    game.setIsCross(false);
-                    state = State.CROSS;
-                } else {
-//                    text.setText("\u25CB");
-                    text.setText("O");
-                    text.setFont(Font.font(noughtFontSize));
-                    game.setIsCross(true);
-                    state = State.NOUGHT;
-                }
-                game.checkResult();
-                getChildren().add(text);
-            }
-        });
     }
 
     public Tile.State getState() {
         return state;
+    }
+
+    public void setState(State state) {
+        this.state = state;
     }
 
     public static int getSize() {

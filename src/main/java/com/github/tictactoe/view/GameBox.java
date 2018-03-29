@@ -2,109 +2,55 @@ package com.github.tictactoe.view;
 
 import com.github.tictactoe.controller.Controller;
 import com.github.tictactoe.model.Game;
-import javafx.application.Platform;
+import javafx.animation.KeyFrame;
+import javafx.animation.KeyValue;
+import javafx.animation.Timeline;
 import javafx.geometry.Insets;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
-
-import java.util.ArrayList;
-import java.util.List;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Line;
+import javafx.util.Duration;
 
 /**
  * Created by maxtar.
  */
-@SuppressWarnings("unused")
-public class GameBox extends VBox {
+@SuppressWarnings({"unused", "WeakerAccess"})
+public class GameBox extends Pane {
 
     private static final int DEFAULT_SIZE = 3;
     private static int size = DEFAULT_SIZE;
     private static int tileSpacing = 5;
-    private final List<List<Tile>> tiles = new ArrayList<>();
+    private final Tile[][] tiles;
+    private final Game game;
+    private Timeline timeline = new Timeline();
+    private double lineWidth = 5;
+    private Color lineColor = Color.RED;
 
     @SuppressWarnings("UnnecessaryLocalVariable")
-    public GameBox(Controller controller) {
+    public GameBox() {
 
-        Game game = new Game(this);
+        game = new Game(this);
+        Controller controller = new Controller(this);
 
-        setPadding(new Insets(tileSpacing));
-        setSpacing(tileSpacing);
+        tiles = new Tile[size][size];
+        VBox vBox = new VBox();
+        vBox.setPadding(new Insets(tileSpacing));
+        vBox.setSpacing(tileSpacing);
         for (int i = 0; i < size; i++) {
-            List<Tile> row = new ArrayList<>();
+            Tile[] row = new Tile[size];
             HBox hBox = new HBox(tileSpacing);
             for (int j = 0; j < size; j++) {
-                Tile tile = new Tile(game);
+                Tile tile = new Tile();
+                tile.setOnMouseClicked(event -> controller.onTileClicked(tile));
                 hBox.getChildren().add(tile);
-                row.add(tile);
+                row[j] = tile;
             }
-            getChildren().add(hBox);
-            tiles.add(row);
+            vBox.getChildren().add(hBox);
+            tiles[i] = row;
         }
-
-        addEventHandler(MouseEvent.MOUSE_CLICKED, event -> {
-            if (game.getState() != Game.State.CONTINUES) {
-                int result = game.checkResult();
-                int tileSize = Tile.getSize();
-                switch (game.getLineType()) {
-                    case ROW: {
-                        int startX = tileSpacing;
-                        int startY = tileSize / 2 + (result - 1) * tileSize + result * tileSpacing;
-                        int endX = size * (tileSize + tileSpacing);
-                        int endY = startY;
-                        controller.drawLine(startX, startY, endX, endY);
-                        break;
-                    }
-                    case COLUMN: {
-                        int startX = tileSize / 2 + (result - 1) * tileSize + result * tileSpacing;
-                        int startY = tileSpacing;
-                        int endX = startX;
-                        int endY = size * (tileSize + tileSpacing);
-                        controller.drawLine(startX, startY, endX, endY);
-                        break;
-                    }
-                    case DIAGONAL: {
-                        switch (result) {
-                            case 1: {
-                                int startX = tileSpacing;
-                                int startY = tileSpacing;
-                                int endX = size * (tileSize + tileSpacing);
-                                int endY = size * (tileSize + tileSpacing);
-                                controller.drawLine(startX, startY, endX, endY);
-                                break;
-                            }
-                            case 2: {
-                                int startX = size * (tileSize + tileSpacing);
-                                int startY = tileSpacing;
-                                int endX = tileSpacing;
-                                int endY = size * (tileSize + tileSpacing);
-                                controller.drawLine(startX, startY, endX, endY);
-                                break;
-                            }
-                        }
-                        break;
-                    }
-                    case DRAW: {
-                        break;
-                    }
-                }
-                switch (game.getState()) {
-                    case DRAW: {
-                        new AlertHandler("Ничья!", getScene().getWindow());
-                        break;
-                    }
-                    case CROSS: {
-                        controller.getTimeline().setOnFinished(actionEvent -> Platform.runLater(() ->
-                                new AlertHandler("Крестики победили!", getScene().getWindow())));
-                        break;
-                    }
-                    case NOUGHT: {
-                        controller.getTimeline().setOnFinished(actionEvent -> Platform.runLater(() ->
-                                new AlertHandler("Нолики победили!", getScene().getWindow())));
-                        break;
-                    }
-                }
-            }
-        });
+        getChildren().add(vBox);
     }
 
     public static int getSize() {
@@ -128,7 +74,54 @@ public class GameBox extends VBox {
         GameBox.tileSpacing = tileSpacing;
     }
 
-    public List<List<Tile>> getTiles() {
+    public Tile[][] getTiles() {
         return tiles;
+    }
+
+    public Game getGame() {
+        return game;
+    }
+
+    public void drawLine(int startX, int startY, int endX, int endY) {
+        Line line = new Line();
+
+        line.setStartX(startX + lineWidth / 2);
+        line.setStartY(startY + lineWidth / 2);
+        line.setEndX(startX);
+        line.setEndY(startY);
+
+        line.setStrokeWidth(lineWidth);
+        line.setStroke(lineColor);
+
+        getChildren().add(line);
+
+        timeline.getKeyFrames().add(new KeyFrame(Duration.millis(100),
+                new KeyValue(line.endXProperty(), endX),
+                new KeyValue(line.endYProperty(), endY)));
+        timeline.play();
+    }
+
+    public Timeline getTimeline() {
+        return timeline;
+    }
+
+    public void setTimeline(Timeline timeline) {
+        this.timeline = timeline;
+    }
+
+    public double getLineWidth() {
+        return lineWidth;
+    }
+
+    public void setLineWidth(int lineWidth) {
+        this.lineWidth = lineWidth;
+    }
+
+    public Color getLineColor() {
+        return lineColor;
+    }
+
+    public void setLineColor(Color lineColor) {
+        this.lineColor = lineColor;
     }
 }
