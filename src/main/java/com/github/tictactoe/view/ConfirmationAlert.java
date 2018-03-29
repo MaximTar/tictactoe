@@ -33,8 +33,9 @@ public class ConfirmationAlert extends Alert {
         if (result.isPresent()) {
             Stage stage = (Stage) owner;
             if (result.get() == btnAgain) {
-                int size = TicTacToe.getWidth();
-                stage.setScene(new Scene(new GameBox(), size, size));
+                int width = TicTacToe.getWidth();
+                int height = TicTacToe.getHeight();
+                stage.setScene(new Scene(new GameBox(), width, height));
             } else if (result.get() == btnCancel) {
                 close();
                 stage.close();
