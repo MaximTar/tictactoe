@@ -15,7 +15,7 @@ public class Tile extends StackPane {
 
     private static int size = 100;
     private static int crossFontSize = 80;
-    private static int noughtFontSize = 60;
+    private static int noughtFontSize = 80;
     private State state = State.EMPTY;
 
     Tile() {

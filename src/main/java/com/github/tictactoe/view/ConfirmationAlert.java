@@ -1,6 +1,5 @@
 package com.github.tictactoe.view;
 
-import com.github.tictactoe.TicTacToe;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
@@ -33,11 +32,9 @@ public class ConfirmationAlert extends Alert {
         if (result.isPresent()) {
             Stage stage = (Stage) owner;
             if (result.get() == btnAgain) {
-                int width = TicTacToe.getWidth();
-                int height = TicTacToe.getHeight();
-                stage.setScene(new Scene(new GameBox(), width, height));
+                GameBox gameBox = new GameBox();
+                stage.setScene(new Scene(gameBox, gameBox.getGameBoxWidth(), gameBox.getGameBoxHeight()));
             } else if (result.get() == btnCancel) {
-                close();
                 stage.close();
             }
         }
