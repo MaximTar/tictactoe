@@ -4,16 +4,16 @@ import com.github.tictactoe.model.Game;
 import com.github.tictactoe.view.*;
 import javafx.application.Platform;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Spinner;
-import javafx.scene.control.Tab;
+import javafx.scene.control.*;
+import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
+import javafx.scene.text.TextAlignment;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Created by maxtar.
@@ -21,11 +21,20 @@ import java.util.Objects;
 @SuppressWarnings("UnnecessaryLocalVariable")
 public class Controller {
 
-    private final GameBox gameBox;
-    private final int gameBoxSize = GameBox.getSize();
-    private final int tileSize = Tile.getSize();
-    private final int tileSpacing = GameBox.getTileSpacing();
-    private final Game game;
+    private static boolean isFirstIsCross = true;
+    private GameBox gameBox;
+    private int gameBoxSize = GameBox.getSize();
+    private int tileSize = Tile.getSize();
+    private int tileSpacing = GameBox.getTileSpacing();
+    private Game game;
+    private String playerComboValue;
+    private int sizeSpinnerValue;
+    private int tileSizeSpinnerValue;
+    private int crossFontSizeSpinnerValue;
+    private int noughtFontSizeSpinnerValue;
+    private int tileSpacingSpinnerValue;
+    private int lineWidthSpinnerValue;
+    private Color lineColorPickerValue;
 
     public Controller(GameBox gameBox) {
         this.gameBox = gameBox;
@@ -33,36 +42,48 @@ public class Controller {
     }
 
     public void onGameParameters() {
-        ParameterPane parameterPane = new ParameterPane(this);
-        Stage parametersStage = new Stage();
-        parametersStage.setScene(new Scene(parameterPane, 300, 400));
-        parametersStage.initOwner(gameBox.getScene().getWindow());
-        parametersStage.initModality(Modality.WINDOW_MODAL);
-        parametersStage.show();
+        Stage parameterStage = new ParameterStage(this,
+                gameBox.getScene().getWindow(), ParameterStage.Tab.GAME);
+        parameterStage.show();
     }
 
     public void onViewParameters() {
-        ParameterPane parameterPane = new ParameterPane(this);
-        Stage parametersStage = new Stage();
-        parametersStage.setScene(new Scene(parameterPane, 300, 400));
-        parametersStage.initOwner(gameBox.getScene().getWindow());
-        parametersStage.initModality(Modality.WINDOW_MODAL);
-        parametersStage.show();
+        Stage parameterStage = new ParameterStage(this,
+                gameBox.getScene().getWindow(), ParameterStage.Tab.VIEW);
+        parameterStage.show();
     }
 
     public void playerComboListener(ComboBox<String> playerCombo) {
-        String selected = playerCombo.getValue();
-        if (Objects.equals(selected, GameTab.getCROSS())) {
-            Game.setIsCross(true);
-        } else if (Objects.equals(selected, GameTab.getNOUGHT())) {
-            Game.setIsCross(false);
-        }
+        playerComboValue = playerCombo.getValue();
     }
 
     public void sizeSpinnerListener(Spinner<Integer> sizeSpinner) {
-        int size = sizeSpinner.getValue();
-        sizeSpinner.getEditor().setText(size + "x" + size);
-        GameBox.setSize(size);
+        sizeSpinnerValue = sizeSpinner.getValue();
+        sizeSpinner.getEditor().setText(sizeSpinnerValue + "x" + sizeSpinnerValue);
+    }
+
+    public void tileSizeSpinnerListener(Spinner<Integer> tileSizeSpinner) {
+        tileSizeSpinnerValue = tileSizeSpinner.getValue();
+    }
+
+    public void crossFontSizeSpinnerListener(Spinner<Integer> crossFontSizeSpinner) {
+        crossFontSizeSpinnerValue = crossFontSizeSpinner.getValue();
+    }
+
+    public void noughtFontSizeSpinnerListener(Spinner<Integer> noughtFontSizeSpinner) {
+        noughtFontSizeSpinnerValue = noughtFontSizeSpinner.getValue();
+    }
+
+    public void tileSpacingSpinnerListener(Spinner<Integer> tileSpacingSpinner) {
+        tileSpacingSpinnerValue = tileSpacingSpinner.getValue();
+    }
+
+    public void lineWidthSpinnerListener(Spinner<Integer> lineWidthSpinner) {
+        lineWidthSpinnerValue = lineWidthSpinner.getValue();
+    }
+
+    public void lineColorPickerListener(ColorPicker lineColorPicker) {
+        lineColorPickerValue = lineColorPicker.getValue();
     }
 
     public void onAcceptClicked(Tab tab) {
@@ -70,12 +91,29 @@ public class Controller {
         alert.setTitle("Принять внесенные изменения");
         alert.setHeaderText("Это перезапустит текущую игру!");
         alert.setContentText("Вы действительно хотите\nпринять внесенные изменения?");
-        alert.showAndWait();
-        Stage primaryStage = (Stage) gameBox.getScene().getWindow();
-        GameBox gameBox = new GameBox();
-        primaryStage.setScene(new Scene(gameBox, gameBox.getGameBoxWidth(), gameBox.getGameBoxHeight()));
-        Stage stage = (Stage) tab.getTabPane().getScene().getWindow();
-        stage.close();
+        Optional<ButtonType> result = alert.showAndWait();
+
+        if (result.isPresent() && result.get() == ButtonType.OK) {
+            if (Objects.equals(playerComboValue, GameTab.getCROSS())) {
+                isFirstIsCross = true;
+            } else if (Objects.equals(playerComboValue, GameTab.getNOUGHT())) {
+                isFirstIsCross = false;
+            }
+
+            GameBox.setSize(sizeSpinnerValue);
+            Tile.setSize(tileSizeSpinnerValue);
+            Tile.setCrossFontSize(crossFontSizeSpinnerValue);
+            Tile.setNoughtFontSize(noughtFontSizeSpinnerValue);
+            GameBox.setTileSpacing(tileSpacingSpinnerValue);
+            GameBox.setLineWidth(lineWidthSpinnerValue);
+            GameBox.setLineColor(lineColorPickerValue);
+
+            Stage primaryStage = (Stage) gameBox.getScene().getWindow();
+            GameBox gameBox = new GameBox();
+            primaryStage.setScene(new Scene(gameBox, gameBox.getGameBoxWidth(), gameBox.getGameBoxHeight()));
+            Stage stage = (Stage) tab.getTabPane().getScene().getWindow();
+            stage.close();
+        }
     }
 
     public void onCancelClicked(Tab tab) {
@@ -86,16 +124,16 @@ public class Controller {
     public void onTileClicked(Tile tile) {
         if (game.getState() == Game.State.CONTINUES && tile.getState() == Tile.State.EMPTY) {
             Text text = new Text();
-            if (Game.isCross()) {
+            if (game.isCross()) {
                 text.setText("x");
                 text.setFont(Font.font(Tile.getCrossFontSize()));
-                Game.setIsCross(false);
+                game.setIsCross(false);
                 tile.setState(Tile.State.CROSS);
             } else {
 //                text.setText("\u25CB");
                 text.setText("o");
                 text.setFont(Font.font(Tile.getNoughtFontSize()));
-                Game.setIsCross(true);
+                game.setIsCross(true);
                 tile.setState(Tile.State.NOUGHT);
             }
             tile.getChildren().add(text);
@@ -162,5 +200,24 @@ public class Controller {
                 }
             }
         }
+    }
+
+    public static boolean isFirstIsCross() {
+        return isFirstIsCross;
+    }
+
+    public void setGameValues(String selectedPlayer, int gameSize) {
+        this.playerComboValue = selectedPlayer;
+        this.sizeSpinnerValue = gameSize;
+    }
+
+    public void setViewValues(int tileSizeSpinnerValue, int crossFontSizeSpinnerValue, int noughtFontSizeSpinnerValue,
+            int tileSpacingSpinnerValue, int lineWidthSpinnerValue, Color lineColorPickerValue) {
+        this.tileSizeSpinnerValue = tileSizeSpinnerValue;
+        this.crossFontSizeSpinnerValue = crossFontSizeSpinnerValue;
+        this.noughtFontSizeSpinnerValue = noughtFontSizeSpinnerValue;
+        this.tileSpacingSpinnerValue = tileSpacingSpinnerValue;
+        this.lineWidthSpinnerValue = lineWidthSpinnerValue;
+        this.lineColorPickerValue = lineColorPickerValue;
     }
 }

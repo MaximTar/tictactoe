@@ -26,17 +26,17 @@ public class GameBox extends Pane {
     private static int size = DEFAULT_SIZE;
     private static int MENU_BAR_HEIGHT = 30;
     private static int tileSpacing = 5;
+    private static int lineWidth = 5;
+    private static Color lineColor = Color.RED;
     private final Tile[][] tiles;
     private final Game game;
     private Timeline timeline = new Timeline();
-    private double lineWidth = 5;
-    private Color lineColor = Color.RED;
     private MenuBar menuBar;
 
     @SuppressWarnings("UnnecessaryLocalVariable")
     public GameBox() {
 
-        game = new Game(this);
+        game = new Game(this, Controller.isFirstIsCross());
         Controller controller = new Controller(this);
         tiles = new Tile[size][size];
         VBox vBox = new VBox();
@@ -65,7 +65,6 @@ public class GameBox extends Pane {
 
     public static void setSize(int size) {
         if (size < DEFAULT_SIZE) {
-            // todo say to user
             GameBox.size = DEFAULT_SIZE;
         } else {
             GameBox.size = size;
@@ -91,23 +90,49 @@ public class GameBox extends Pane {
     public void drawLine(int startX, int startY, int endX, int endY) {
         Line line = new Line();
 
-        // todo если column, то endY - lW/2, если row, то endX - lW/2
+        if (game.getLineType() == Game.LineType.ROW) {
+            line.setStartX(startX + (double) lineWidth / 2);
+            line.setStartY(startY + (double) lineWidth / 2 + MENU_BAR_HEIGHT);
+            line.setEndX(startX + (double) lineWidth / 2);
+            line.setEndY(startY + (double) lineWidth / 2 + MENU_BAR_HEIGHT);
 
-        line.setStartX(startX + lineWidth / 2);
-        line.setStartY(startY + lineWidth / 2 + MENU_BAR_HEIGHT);
-        line.setEndX(startX + lineWidth / 2);
-        line.setEndY(startY + lineWidth / 2 + MENU_BAR_HEIGHT);
+            line.setStrokeWidth(lineWidth);
+            line.setStroke(lineColor);
 
-        System.out.println(startY + lineWidth / 2 + MENU_BAR_HEIGHT);
+            getChildren().add(line);
 
-        line.setStrokeWidth(lineWidth);
-        line.setStroke(lineColor);
+            timeline.getKeyFrames().add(new KeyFrame(Duration.millis(100),
+                    new KeyValue(line.endXProperty(), endX),
+                    new KeyValue(line.endYProperty(), endY + (double) lineWidth / 2 + MENU_BAR_HEIGHT)));
+        } else if (game.getLineType() == Game.LineType.COLUMN) {
+            line.setStartX(startX + (double) lineWidth / 2);
+            line.setStartY(startY + (double) lineWidth / 2 + MENU_BAR_HEIGHT);
+            line.setEndX(startX + (double) lineWidth / 2);
+            line.setEndY(startY + (double) lineWidth / 2 + MENU_BAR_HEIGHT);
 
-        getChildren().add(line);
+            line.setStrokeWidth(lineWidth);
+            line.setStroke(lineColor);
 
-        timeline.getKeyFrames().add(new KeyFrame(Duration.millis(100),
-                new KeyValue(line.endXProperty(), endX + lineWidth / 2),
-                new KeyValue(line.endYProperty(), endY + lineWidth / 2 + MENU_BAR_HEIGHT)));
+            getChildren().add(line);
+
+            timeline.getKeyFrames().add(new KeyFrame(Duration.millis(100),
+                    new KeyValue(line.endXProperty(), endX + (double) lineWidth / 2),
+                    new KeyValue(line.endYProperty(), endY + MENU_BAR_HEIGHT)));
+        } else {
+            line.setStartX(startX + (double) lineWidth / 2);
+            line.setStartY(startY + (double) lineWidth / 2 + MENU_BAR_HEIGHT);
+            line.setEndX(startX + (double) lineWidth / 2);
+            line.setEndY(startY + (double) lineWidth / 2 + MENU_BAR_HEIGHT);
+
+            line.setStrokeWidth(lineWidth);
+            line.setStroke(lineColor);
+
+            getChildren().add(line);
+
+            timeline.getKeyFrames().add(new KeyFrame(Duration.millis(100),
+                    new KeyValue(line.endXProperty(), endX),
+                    new KeyValue(line.endYProperty(), endY + MENU_BAR_HEIGHT)));
+        }
         timeline.play();
     }
 
@@ -134,20 +159,20 @@ public class GameBox extends Pane {
         this.timeline = timeline;
     }
 
-    public double getLineWidth() {
+    public static int getLineWidth() {
         return lineWidth;
     }
 
-    public void setLineWidth(int lineWidth) {
-        this.lineWidth = lineWidth;
+    public static void setLineWidth(int lineWidth) {
+        GameBox.lineWidth = lineWidth;
     }
 
-    public Color getLineColor() {
+    public static Color getLineColor() {
         return lineColor;
     }
 
-    public void setLineColor(Color lineColor) {
-        this.lineColor = lineColor;
+    public static void setLineColor(Color lineColor) {
+        GameBox.lineColor = lineColor;
     }
 
     public int getGameBoxWidth() {

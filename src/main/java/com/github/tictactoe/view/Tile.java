@@ -14,8 +14,8 @@ public class Tile extends StackPane {
     public enum State {EMPTY, NOUGHT, CROSS}
 
     private static int size = 100;
-    private static int crossFontSize = 80;
-    private static int noughtFontSize = 80;
+    private static int crossFontSize = 50;
+    private static int noughtFontSize = 50;
     private State state = State.EMPTY;
 
     Tile() {
