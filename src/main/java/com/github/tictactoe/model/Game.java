@@ -13,13 +13,14 @@ public class Game {
     @SuppressWarnings("WeakerAccess")
     public enum LineType {ROW, COLUMN, DIAGONAL, DRAW}
 
-    private boolean isCross = true;
+    private boolean isCross;
     private State state = State.CONTINUES;
     private LineType lineType;
     private final GameBox gameBox;
 
-    public Game(GameBox gameBox) {
+    public Game(GameBox gameBox, boolean isCross) {
         this.gameBox = gameBox;
+        this.isCross = isCross;
     }
 
     public int checkResult() {

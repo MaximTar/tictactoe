@@ -1,7 +1,6 @@
 package com.github.tictactoe.view;
 
 import com.github.tictactoe.controller.Controller;
-import com.github.tictactoe.model.Game;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
@@ -19,8 +18,6 @@ public class GameTab extends Tab {
 
     private static final String CROSS = "Крестик";
     private static final String NOUGHT = "Нолик";
-
-    private static ComboBox<String> playerCombo;
 
     public GameTab(Controller controller) {
 
@@ -41,8 +38,8 @@ public class GameTab extends Tab {
         grid.add(gameLabel, 0, 1);
 
         ObservableList<String> options = FXCollections.observableArrayList(CROSS, NOUGHT);
-        playerCombo = new ComboBox<>(options);
-        if (Game.isCross()) {
+        ComboBox<String> playerCombo = new ComboBox<>(options);
+        if (Controller.isFirstIsCross()) {
             playerCombo.getSelectionModel().select(CROSS);
         } else {
             playerCombo.getSelectionModel().select(NOUGHT);
@@ -57,9 +54,12 @@ public class GameTab extends Tab {
                 new SpinnerValueFactory.IntegerSpinnerValueFactory(minValue, maxValue);
         sizeSpinner.setValueFactory(valueFactory);
         int size = GameBox.getSize();
+        sizeSpinner.getValueFactory().setValue(size);
         sizeSpinner.getEditor().setText(size + "x" + size);
         sizeSpinner.valueProperty().addListener((observable, oldValue, newValue) -> controller.sizeSpinnerListener(sizeSpinner));
         grid.add(sizeSpinner, 1, 1);
+
+        controller.setGameValues(playerCombo.getSelectionModel().getSelectedItem(), sizeSpinner.getValue());
 
         Button accept = new Button("Принять");
         accept.setOnMouseClicked(event -> controller.onAcceptClicked(this));
@@ -82,9 +82,5 @@ public class GameTab extends Tab {
 
     public static String getNOUGHT() {
         return NOUGHT;
-    }
-
-    public static ComboBox<String> getPlayerCombo() {
-        return playerCombo;
     }
 }
